@@ -1,0 +1,21 @@
+# Discovery service Helm values — MCP gateway registration.
+# Mirror the pattern from ai-intent-service PR #306 values.yaml.
+
+mcp:
+  # Enable the /mcp endpoint on the service.
+  enabled: false          # override true in dev/test values
+  # Register with Agentgateway via PlatformGw CR.
+  registerWithGateway: false   # only set true once deployed and reachable via MAPIG
+  # Namespace of the Agentgateway installation.
+  gatewayNamespace: agentgateway-system
+  # Tool visibility in the gateway registry: "internal" (ASA only) or "public".
+  toolVisibility: internal
+  # Non-prod shortcut: enabled by default outside prod (same as ai-intent-service).
+  nonProd:
+    enabled: true
+    registerWithGateway: false
+
+# MAPIG hostname — set per environment in env values files.
+# Example: discovery-service.managedgw.us001-prod.arcticwolf.net
+mapig:
+  hostname: ""

@@ -1,0 +1,7 @@
+.env
+.env.*
+*.token
+.toke
+bin/
+data/
+.DS_Store

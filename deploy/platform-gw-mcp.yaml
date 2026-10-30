@@ -1,0 +1,208 @@
+{{- /*
+Registers the Discovery service's MCP tools with the MCP Gateway.
+
+Pattern: identical to ai-intent-service PR #306 (platform-gw-mcp.yaml).
+The platform operator reads this PlatformGw CR and adds the Discovery service
+as a new target on the AgentgatewayBackend. Agentgateway picks it up via xDS —
+no gateway redeploy needed.
+
+All requests go through MAPIG (same auth sidecar as every other route), so
+org scoping and the portal capability check are inherited automatically.
+ASA connects to mcpgw.<pod>-<env>.rtkwlf.io/mcp and gets all Discovery tools
+through the same Auth0 JWT + platform-auth-helper-svc guardrail.
+
+Prerequisites before deploying to a cluster:
+  1. The Discovery service must be deployed and reachable at its MAPIG hostname.
+  2. mcp.registerWithGateway must be true in the Discovery service Helm values.
+  3. ASA must be granted the discovery-service tool list in platform-auth-config.
+*/ -}}
+{{- if and .Values.mcp.registerWithGateway .Values.mcp.enabled }}
+{{- $mapig := printf "https://%s" (include "discovery-service.mapig.url" .) }}
+apiVersion: platform.arcticwolf.net/v1alpha1
+kind: PlatformGw
+metadata:
+  name: discovery-service
+  namespace: {{ .Values.mcp.gatewayNamespace | default "agentgateway-system" }}
+  labels:
+    app: discovery-service
+spec:
+  mcpSpec:
+    serviceName: discovery-service
+    host: {{ include "discovery-service.mapig.url" . }}
+    path: /mcp
+    tools:
+      # ── Read-only tools ──────────────────────────────────────────────────────
+      - name: find_organization
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: get_setup_status
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: find_site_sensors
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: list_log_sources
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: list_sensors
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: get_syslog_destination
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: get_contacts
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: get_sso_status
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: get_agent_downloads
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: list_cloud_integrations
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: get_log_source_samples
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: suggest_parser
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: preview_parser
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: check_parser_activity
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: check_mfa_status
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: get_onboarding_progress
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: ask_arctic_wolf_assistant
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      # ── Write tools (readOnlyHint: false) ────────────────────────────────────
+      # These prepare and apply changes to Arctic Wolf platform config.
+      # The platform-auth-helper-svc guardrail must grant ASA access to these.
+      - name: prepare_change
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+
+      - name: apply_change
+        x-awn-mcp-visibility: {{ .Values.mcp.toolVisibility | default "internal" }}
+        apiDetails:
+          - method: POST
+            x-awn-mcp-base-url: {{ $mapig | quote }}
+            x-awn-mcp-api-path: "/mcp"
+            x-awn-platform-capabilities:
+              - portal
+{{- end }}
